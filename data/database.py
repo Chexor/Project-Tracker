@@ -27,6 +27,7 @@ class Database:
             )
         ''')
         self.connection.commit()
+        self.close()
 
     def connect(self):
         return self.connection
