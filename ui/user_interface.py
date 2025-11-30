@@ -1,8 +1,7 @@
 # ui/user_interface.py
-
+from models.work_session import WorkSession
 from ui.main_menu import MainMenu
 from data.database import Database
-
 
 class UserInterface:
     """
@@ -11,10 +10,19 @@ class UserInterface:
     def __init__(self, db: Database):
         self.db = db
         self.main_menu = MainMenu()
-        self.active_projects = db.get_projects_from_db()
-        self.active_session = db.get_active_work_session_from_db()
+        self.active_projects = []
+        self.active_session = None
 
-    def launch(self):
+    def set_active_session(self, active_session: WorkSession):
+        self.active_session = active_session
+
+    def set_active_projects(self, active_projects: list):
+        self.active_projects = active_projects
+
+    def display_main_menu(self) -> str:
+        """
+        Displays the main menu and returns user selection.
+        """
         while True:
             # Toon header
             print(self.main_menu.header)
@@ -30,26 +38,13 @@ class UserInterface:
                 print(option)
 
             # Vraag om gebruikersinvoer
-            selection = input(f"Selecteer een optie (1-{len(self.main_menu.options)}
-                            
-            # Verwerk gebruikersinvoer
-            if selection == "1":
-                self.show_active_projects()
-            elif selection == "2":
-                self.create_new_project()
-            elif selection == "3":
-                self.start_new_work_session()
-            elif selection == "4":
-                self.end_active_work_session()
-            elif selection == "5":
-                self.export_csv()
-            elif selection == "6":
-                print("Afsluiten...")
-                break
-            else:
-                print("Ongeldige selectie. Probeer het opnieuw.")
+            selection = input(f"Selecteer een optie (1-{len(self.main_menu.options)}): ")
 
-    def show_active_projects(self):
+            return selection
+
+
+
+    def print_active_projects(self):
         print("Actieve projecten:")
         for project in self.active_projects:
             print(project)

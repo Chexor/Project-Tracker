@@ -1,23 +1,24 @@
 # main.py
+
 from environs import Env
 from data.database import Database
-import ui.user_interface as user_interface
+from ui.user_interface import UserInterface
 
 
 def main():
+
+    # Initialize environment variables
+    env = Env()
+    env.read_env()
+    print("Environment variables loaded.")
 
     # Initialize the database
     db = Database()
     print("Database initialized.")
 
-    # Load active projects
-    active_projects = db.get_projects_from_db()
-
-
-    # Launch UI
-    user_interface.launch_ui(db)
-
-
+    # Initialize and launch User Interface
+    UI = UserInterface(db)
+    UI.run()
 
 if __name__ == "__main__":
     main()
