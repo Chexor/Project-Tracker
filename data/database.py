@@ -1,6 +1,6 @@
 
 import sqlite3
-import config.config as config
+import Settings.config as config
 from models.project import Project
 from models.work_session import WorkSession
 from datetime import datetime
@@ -30,7 +30,11 @@ class Database:
         ''')
         self.connection.commit()
 
-    def add_project_to_db(self, project: Project):
+    def add_project_to_db(self, project: Project) -> int:
+        """
+        Adds a new project to the database.
+        + Adds the project ID to the project instance.
+        """
         cursor = self.connection.cursor()
         cursor.execute(
             "INSERT INTO projects (name, description, archived) VALUES (?, ?, ?)",
@@ -38,9 +42,15 @@ class Database:
         )
         self.connection.commit()
         project.proj_id = cursor.lastrowid
-        return project.proj_id
 
     def add_work_session_to_db(self, work_session: WorkSession):
+        """
+        Adds a new work session to the database.
+        Args:
+            work_session (WorkSession): The work session to add.
+        Returns:
+            None
+        """
         cursor = self.connection.cursor()
         cursor.execute(
             "INSERT INTO work_sessions (project_id, start_time, end_time, description) VALUES (?, ?, ?, ?)",
@@ -107,7 +117,7 @@ class Database:
             work_sessions.append(ws)
         return work_sessions
 
-    def get_active_work_session(self):
+    def get_active_work_session_from_db(self):
         cursor = self.connection.cursor()
         cursor.execute(
             "SELECT id, project_id, start_time, description FROM work_sessions WHERE end_time IS NULL"
