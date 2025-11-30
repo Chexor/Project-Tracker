@@ -1,14 +1,14 @@
-import configparser
+# data/db_handler.py
+
 import sqlite3
-from config.config import config
+from config import config
 from models.project import Project
 from models.work_session import WorkSession
 from datetime import datetime
 
-class Database:
-    def __init__(self):
-        self.db = config.DB_PATH
-        self.connection = sqlite3.connect(self.db)
+class DatabaseHandler:
+    def __init__(self, db):
+        self.db = db
 
     def create_tables(self):
         cursor = self.connection.cursor()

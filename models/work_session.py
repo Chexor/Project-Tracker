@@ -5,11 +5,31 @@ from datetime import datetime
 
 @dataclass
 class WorkSession:
-    start_time: datetime
+    start_time: datetime.now()
     project_id: int
     description: str = ""
     end_time: datetime = None
     id: int = None
+    is_active: bool = True
 
     def __str__(self) -> str:
         return f"WorkSession(ID: {self.id}, Start: {self.start_time}, End: {self.end_time}, Description: {self.description})"
+
+    def end(self):
+        self.is_active = False
+        self.end_time = datetime.now()
+
+    def change_description(self, new_description: str):
+        self.description = new_description
+
+    def change_project_id(self, new_project_id: int):
+        self.project_id = new_project_id
+
+    def change_start_time(self, new_start_time: datetime):
+        self.start_time = new_start_time
+
+    def change_end_time(self, new_end_time: datetime):
+        self.end_time = new_end_time
+
+
+
