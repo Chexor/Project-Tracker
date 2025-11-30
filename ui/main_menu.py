@@ -18,5 +18,22 @@ class MainMenu:
             ]
         self.projects = []
 
-    def
+        print(self.header)
+
+    def show(self, active_session):
+        """
+        Toont het hoofd menu (header en opties).
+        + de actieve werksessie indien aanwezig.
+        """
+        print(self.header)
+
+        if active_session:
+            print(f"*** Actieve sessie: {active_session} ***")
+        else:
+            print("*** Geen actieve werksessie ***")
+
+        for option in self.options:
+            print(option)
+
+        print()
 

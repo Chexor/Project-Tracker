@@ -7,11 +7,6 @@ from ui.user_interface import UserInterface
 
 def main():
 
-    # Initialize environment variables
-    env = Env()
-    env.read_env()
-    print("Environment variables loaded.")
-
     # Initialize the database
     db = Database()
     print("Database initialized.")
