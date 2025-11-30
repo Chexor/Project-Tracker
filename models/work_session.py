@@ -13,7 +13,7 @@ class WorkSession:
     is_active: bool = True
 
     def __str__(self) -> str:
-        return f"WorkSession(ID: {self.id}, Start: {self.start_time}, End: {self.end_time}, Description: {self.description})"
+        return f"(Project:{self.project_id}, Description: {self.description}, Started: {self.start_time})"
 
     def end(self):
         self.is_active = False

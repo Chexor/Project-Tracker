@@ -36,7 +36,7 @@ class UserInterface:
                 self._start_new_session()
             elif selection == '4':
                 # Beëindig actieve werksessie
-                self._start_new_session()
+                self._stop_active_session()
             elif selection == '5':
                 # Exporteer CSV
                 print("CSV exporteren... (nog te implementeren)")

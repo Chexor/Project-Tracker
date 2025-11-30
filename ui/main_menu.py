@@ -36,6 +36,5 @@ class MainMenu:
         for option in self.options:
             print(option)
 
-
         print()
 
