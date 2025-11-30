@@ -5,6 +5,7 @@ import sys
 from models.project import Project
 from models.work_session import WorkSession
 from data.database import Database
+from ui.main_menu import MainMenu
 
 class UserInterface:
     """
@@ -16,7 +17,7 @@ class UserInterface:
         self.db = db
         self.menu = MainMenu()
         self.active_projects = []
-        self.active_session: Worksession | None = self.db.get_active_work_session_from_db()
+        self.active_session: WorkSession | None = self.db.get_active_work_session_from_db()
 
     def run(self):
         while True:
@@ -26,20 +27,23 @@ class UserInterface:
 
             if selection == '1':
                 # Toon actieve projecten
-                self.print_active_projects()
+                self._show_active_projects()
             elif selection == '2':
                 # Maak nieuw project
-                self.create_new_project()
+                self._new_project()
             elif selection == '3':
                 # Start nieuwe werksessie
-                self.start_new_work_session()
+                self._start_new_session()
             elif selection == '4':
                 # Beëindig actieve werksessie
-                self.end_active_work_session()
+                self._start_new_session()
             elif selection == '5':
                 # Exporteer CSV
                 print("CSV exporteren... (nog te implementeren)")
             elif selection == '6':
+                # Sluit project af
+                print("Project afsluiten... (nog te implementeren)")
+            elif selection == '7':
                 # Afsluiten
                 print("Afsluiten...")
                 sys.exit(0)
@@ -56,7 +60,7 @@ class UserInterface:
         self.db.add_project_to_db(new_project)
         self.active_projects.append(new_project)
 
-    def _toon_actieve_projecten(self):
+    def _show_active_projects(self):
         self.active_projects = self.db.get_projects_from_db()
         print("Actieve projecten:")
         for project in self.active_projects:
@@ -68,7 +72,7 @@ class UserInterface:
             print("Er is al een actieve werksessie. Beëindig deze eerst.")
             return
 
-        self._toon_actieve_projecten()
+        self._show_active_projects()
         try:
             proj_id = int(input("Voer het ID van het project in om een werksessie te starten: ").strip())
         except ValueError:
@@ -90,3 +94,19 @@ class UserInterface:
         self.active_session = None
         print(f"Werk sessie beëindigd: {self.active_session}")
 
+    def _archive_project(self):
+        self._show_active_projects()
+        try:
+            proj_id = int(input("Voer het ID van het project in om af te sluiten: ").strip())
+        except ValueError:
+            print("Ongeldig project ID.")
+            return
+
+        project_to_archive = next((p for p in self.active_projects if p.proj_id == proj_id), None)
+        if not project_to_archive:
+            print(f"Project met ID {proj_id} niet gevonden.")
+            return
+
+        project_to_archive.archive()
+        self.db.update_project_in_db(project_to_archive)
+        print(f"Project afgesloten: {project_to_archive}")

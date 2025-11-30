@@ -14,11 +14,10 @@ class MainMenu:
             "3. Start nieuwe werksessie",
             "4. Beëindig actieve werksessie",
             "5. Export CSV",
-            "6. Afsluiten"
+            "6. Sluit project af",
+            "7. Afsluiten"
             ]
         self.projects = []
-
-        print(self.header)
 
     def show(self, active_session):
         """

@@ -36,7 +36,7 @@ class Database:
     def add_project_to_db(self, project: Project) -> int:
         """
         Adds a new project to the database.
-        + Adds the project ID to the project instance.
+        + updates the project ID to the project instance.
         """
         cursor = self.connection.cursor()
         cursor.execute(

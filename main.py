@@ -10,6 +10,7 @@ def main():
     # Initialize the database
     db = Database()
     print("Database initialized.")
+    print("")
 
     # Initialize and launch User Interface
     UI = UserInterface(db)
