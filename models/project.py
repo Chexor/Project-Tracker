@@ -11,9 +11,13 @@ class Project:
     """
     name: str
     description: str
-    work_sessions: list[WorkSession]
+    work_sessions: list[WorkSession] = None
     proj_id: int = None
     archived: bool = False
+
+    def __post_init__(self):
+        if self.work_sessions is None:
+            self.work_sessions = []
 
     def rename(self, new_name:str):
         self.name = new_name
@@ -30,4 +34,4 @@ class Project:
         return ws
 
     def __str__(self):
-        return f"Project: {self.name} (ID: {self.id})\nDescription: {self.description}\nArchived: {self.archived}\nWork Sessions: {len(self.work_sessions)}"
+        return f"(ID: {self.proj_id}) {self.name}: {self.description}"

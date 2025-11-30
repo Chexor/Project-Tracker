@@ -1,6 +1,5 @@
 # main.py
 
-from environs import Env
 from data.database import Database
 from ui.user_interface import UserInterface
 

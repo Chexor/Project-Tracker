@@ -17,7 +17,7 @@ class Database:
             CREATE TABLE IF NOT EXISTS projects (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                description TEXT
+                description TEXT,
                 archived INTEGER DEFAULT 0
             )
         ''')
@@ -33,7 +33,7 @@ class Database:
         ''')
         self.connection.commit()
 
-    def add_project_to_db(self, project: Project) -> int:
+    def add_project_to_db(self, project: Project):
         """
         Adds a new project to the database.
         + updates the project ID to the project instance.

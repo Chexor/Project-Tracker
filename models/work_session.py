@@ -5,9 +5,9 @@ from datetime import datetime
 
 @dataclass
 class WorkSession:
-    start_time: datetime.now()
     project_id: int
     description: str = ""
+    start_time: datetime = datetime.now()
     end_time: datetime = None
     id: int = None
     is_active: bool = True
