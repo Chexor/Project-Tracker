@@ -1,6 +1,7 @@
 # models\project.py
 
 from work_session import WorkSession
+from data.database import Database
 from _datetime import datetime
 
 class Project:
@@ -27,6 +28,9 @@ class Project:
         ws = WorkSession(start_time=start_time, project_id=self.proj_id, description=description)
         self.work_sessions.append(ws)
         return ws
+
+    def get_id_from_db(self):
+
 
     def __str__(self):
         return f"Project: {self.name} (ID: {self.id})\nDescription: {self.description}\nArchived: {self.archived}\nWork Sessions: {len(self.work_sessions)}"

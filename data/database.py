@@ -1,6 +1,6 @@
-import configparser
+
 import sqlite3
-from config.config import config
+import config.config as config
 from models.project import Project
 from models.work_session import WorkSession
 from datetime import datetime
@@ -31,17 +31,17 @@ class Database:
         self.connection.commit()
 
     def add_project_to_db(self, project: Project):
-        cursor = self.db.connection.cursor()
+        cursor = self.connection.cursor()
         cursor.execute(
             "INSERT INTO projects (name, description, archived) VALUES (?, ?, ?)",
             (project.name, project.description, int(project.archived))
         )
-        self.db.connection.commit()
+        self.connection.commit()
         project.proj_id = cursor.lastrowid
         return project.proj_id
 
     def add_work_session_to_db(self, work_session: WorkSession):
-        cursor = self.db.connection.cursor()
+        cursor = self.connection.cursor()
         cursor.execute(
             "INSERT INTO work_sessions (project_id, start_time, end_time, description) VALUES (?, ?, ?, ?)",
             (
@@ -53,15 +53,15 @@ class Database:
         )
 
     def update_project_in_db(self, project: Project):
-        cursor = self.db.connection.cursor()
+        cursor = self.connection.cursor()
         cursor.execute(
             "UPDATE projects SET name = ?, description = ?, archived = ? WHERE id = ?",
             (project.name, project.description, int(project.archived), project.proj_id)
         )
-        self.db.connection.commit()
+        self.connection.commit()
 
     def update_work_session_in_db(self, work_session: WorkSession):
-        cursor = self.db.connection.cursor()
+        cursor = self.connection.cursor()
         cursor.execute(
             "UPDATE work_sessions SET start_time = ?, end_time = ?, description = ? WHERE id = ?",
             (
@@ -71,10 +71,10 @@ class Database:
                 work_session.id
             )
         )
-        self.db.connection.commit()
+        self.connection.commit()
 
     def get_projects_from_db(self) -> list[Project]:
-        cursor = self.db.connection.cursor()
+        cursor = self.connection.cursor()
         cursor.execute("SELECT id, name, description, archived FROM projects")
         rows = cursor.fetchall()
         projects = []
@@ -89,7 +89,7 @@ class Database:
         return projects
 
     def get_work_sessions_for_project_from_db(self, project:Project) -> list[WorkSession]:
-        cursor = self.db.connection.cursor()
+        cursor = self.connection.cursor()
         cursor.execute(
             "SELECT id, start_time, end_time, description FROM work_sessions WHERE project_id = ?",
             (project.proj_id,)
@@ -108,7 +108,7 @@ class Database:
         return work_sessions
 
     def get_active_work_session(self):
-        cursor = self.db.connection.cursor()
+        cursor = self.connection.cursor()
         cursor.execute(
             "SELECT id, project_id, start_time, description FROM work_sessions WHERE end_time IS NULL"
         )

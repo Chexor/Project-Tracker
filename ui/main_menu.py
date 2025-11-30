@@ -27,7 +27,7 @@ class MainMenu:
     def handle_menu_choice(self, choice):
         match choice:
             case '1':
-
+                print()
             case '2':
                 print("Creating new project...")
             case '3':
@@ -40,3 +40,12 @@ class MainMenu:
                 print("Exiting the application...")
             case _:
                 print("Invalid choice. Please select a valid option.")
+
+    def print_project_list(self, projects):
+        if not projects:
+            print("No projects available.")
+            return
+        print("Projects:")
+        for project in projects:
+
+            print(f"- {project.name} (ID: {project.proj_id}, Status: {status})")
