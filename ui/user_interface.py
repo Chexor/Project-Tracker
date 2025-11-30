@@ -62,6 +62,7 @@ class UserInterface:
 
     def _show_active_projects(self):
         self.active_projects = self.db.get_projects_from_db()
+        print()
         if not self.active_projects:
             print("Geen actieve projecten gevonden.\n")
             return
@@ -69,7 +70,6 @@ class UserInterface:
             print("Actieve projecten:")
             for project in self.active_projects:
                 print(project)
-        print()
 
     def _start_new_session(self):
         if self.active_session:
