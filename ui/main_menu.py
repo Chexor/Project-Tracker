@@ -6,8 +6,7 @@ class MainMenu:
     """
     Main menu interface for the Project Time Tracker application.
     """
-    def __init__(self, database:Database):
-        self.database = database
+    def __init__(self):
         self.header = "=== Project Time Tracker ==="
         self.options = [
             "1. Toon actieve projecten",
@@ -19,22 +18,5 @@ class MainMenu:
             ]
         self.projects = []
 
-    def display(self):
-        print(self.header)
-        print()
-        for option in self.options:
-            print(option)
-
-    def display_active_session(self):
-        active_session = self.get_active_session()
-        if active_session:
-            print("Actieve werksessie:")
-            print(active_session)
-        else:
-            print("Geen actieve werksessie.")
-
-    #def get_active_session(self):
-
-    def menu_selection(self):
-        return input(f"Kies een optie (1-{len(self.options)}): ")
+    def
 

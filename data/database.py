@@ -1,14 +1,15 @@
 
 import sqlite3
-import Settings.config as config
+from datetime import datetime
+from config import DB_PATH
+
 from models.project import Project
 from models.work_session import WorkSession
-from datetime import datetime
 
 class Database:
     def __init__(self):
-        self.db = config.DB_PATH
-        self.connection = sqlite3.connect(self.db)
+        self.connection = sqlite3.connect(DB_PATH)
+        self.create_tables()
 
     def create_tables(self):
         cursor = self.connection.cursor()
@@ -17,14 +18,16 @@ class Database:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 description TEXT
+                archived INTEGER DEFAULT 0
             )
         ''')
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS work_sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 project_id INTEGER,
-                start_time TEXT,
+                start_time TEXT NOT NULL,
                 end_time TEXT,
+                description TEXT,
                 FOREIGN KEY(project_id) REFERENCES projects(id)
             )
         ''')
