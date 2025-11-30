@@ -26,13 +26,16 @@ class MainMenu:
         """
         print(self.header)
 
+        print("-" * len(self.header))
         if active_session:
             print(f"*** Actieve sessie: {active_session} ***")
         else:
             print("*** Geen actieve werksessie ***")
+        print("-" * len(self.header))
 
         for option in self.options:
             print(option)
+
 
         print()
 
