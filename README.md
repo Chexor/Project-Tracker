@@ -3,12 +3,17 @@
 CLI-applicatie om gepresteerde werkuren bij te houden voor verschillende projecten.
 
 ## Omschrijving
-Deze applicatie stelt gebruikers in staat om hun werkuren per project bij te houden, rapporten te genereren en een overzicht te krijgen van de tijd die aan elk project is besteed.
+**Project Tracker** is een command-line interface (CLI) applicatie geschreven in Python voor het bijhouden van werkuren per project. 
+De applicatie maakt gebruik van een SQLite database voor persistente opslag en biedt een intuïtieve menu-gestuurde interface.
 
-## Functies
-- **Projecten beheren**: Voeg nieuwe projecten toe, bewerk bestaande projecten en verwijder.
-- **Uren registreren**: Log gepresteerde werkuren per project met beschrijvingen.
-- **Rapporten genereren**: Genereer rapporten over de gepresteerde uren per project.
+### Hoofdfunctionaliteiten
+
+| Functie | Beschrijving |
+|---------|--------------|
+| **Projectbeheer** | Aanmaken, bewerken en archiveren van projecten |
+| **Werksessie Tracking** | Starten en stoppen van werksessies met tijdregistratie |
+| **Rapportage** | Exporteren van werksessies naar CSV-bestanden |
+| **Actieve Sessie Monitoring** | Real-time weergave van lopende werksessies |
 
 ## Installatie
 1. Maak en activeer een virtuele omgeving:
@@ -23,6 +28,73 @@ Deze applicatie stelt gebruikers in staat om hun werkuren per project bij te hou
    ```
 3. Kopieer `.env.example` naar `.env` en pas de configuratie aan indien nodig.
 
+### Menu Structuur
+
+```
+Hoofdmenu (MainMenu)
+├── 1. Toon actieve projecten
+├── 2. Open project → Projectmenu (ProjectMenu)
+│   ├── 1. Start nieuwe werksessie
+│   ├── 2. Stop actieve werksessie
+│   ├── 3. Toon alle werksessies
+│   ├── 4. Bewerk project
+│   ├── 5. Rapport exporteren (CSV)
+│   ├── 6. Project archiveren
+│   └── 7. Terug naar hoofdmenu
+├── 3. Maak nieuw project
+├── 4. Stop actieve werksessie
+└── 5. Afsluiten
+```
+
+## Code Architectuur
+
+### Directory Structuur
+
+```
+Project-Tracker/
+├── main.py              # Applicatie entry point
+├── config.py            # Configuratie en environment variabelen
+├── data/
+│   ├── __init__.py
+│   └── database.py      # SQLite database operaties
+├── models/
+│   ├── __init__.py
+│   ├── project.py       # Project dataclass
+│   └── work_session.py  # WorkSession dataclass
+├── services/
+│   ├── __init__.py
+│   └── csv_export.py    # CSV export functionaliteit
+├── ui/
+│   ├── __init__.py
+│   ├── main_menu.py     # Hoofdmenu interface
+│   └── project_menu.py  # Projectmenu interface
+├── .env.example         # Voorbeeld configuratie
+├── .gitignore           # Git ignore regels
+└── README.md            # Documentatie
+```
+
+### Lagen Architectuur
+
+De applicatie volgt een gelaagde architectuur:
+
+```
+┌─────────────────────────────────────┐
+│           UI Layer (ui/)            │
+│  MainMenu, ProjectMenu              │
+├─────────────────────────────────────┤
+│       Services Layer (services/)    │
+│  csv_export                         │
+├─────────────────────────────────────┤
+│         Data Layer (data/)          │
+│  Database                           │
+├─────────────────────────────────────┤
+│       Models Layer (models/)        │
+│  Project, WorkSession               │
+├─────────────────────────────────────┤
+│         Configuration (config.py)   │
+│  Environment variabelen             │
+└─────────────────────────────────────┘
+```
 
 ## Gebruik
 1. Start de applicatie met het volgende commando:
