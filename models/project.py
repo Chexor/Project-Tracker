@@ -1,37 +1,86 @@
-# models\project.py
+# models/project.py
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import List, Optional
 from models.work_session import WorkSession
-from _datetime import datetime
+
 
 @dataclass
 class Project:
     """
-    Represents a project with a name, description, and associated work sessions.
+    Representeert een project met naam, beschrijving, werksessies en archiefstatus.
+    Wordt gebruikt in combinatie met SQLite en een command-line interface.
     """
     name: str
-    description: str
-    work_sessions: list[WorkSession] = None
-    proj_id: int = None
+    description: str = ""
+    proj_id: Optional[int] = None
     archived: bool = False
+    work_sessions: List[WorkSession] = field(default_factory=list)
 
     def __post_init__(self):
+        """Zorgt dat work_sessions altijd een lege lijst is als None wordt meegegeven."""
         if self.work_sessions is None:
             self.work_sessions = []
 
-    def rename(self, new_name:str):
-        self.name = new_name
+    @property
+    def is_archived(self) -> bool:
+        """Maakt het lezen van archived consistenter (optioneel, maar netjes)."""
+        return self.archived
 
-    def archive(self):
+    @property
+    def total_duration(self) -> str:
+        """Totale tijd van alle afgesloten sessies (als leesbare string)."""
+        total_seconds = sum(
+            (s.duration.total_seconds() for s in self.work_sessions if not s.is_active),
+            0
+        )
+        hours, remainder = divmod(int(total_seconds), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        parts = []
+        if hours:
+            parts.append(f"{hours}u")
+        if minutes:
+            parts.append(f"{minutes}m")
+        if seconds or not parts:
+            parts.append(f"{seconds}s")
+        return " ".join(parts) if parts else "0s"
+
+    @property
+    def active_session(self) -> Optional[WorkSession]:
+        """Retourneert de actieve sessie (indien aanwezig)."""
+        return next((s for s in self.work_sessions if s.is_active), None)
+
+    def rename(self, new_name: str) -> None:
+        """Wijzigt de naam van het project."""
+        if not new_name.strip():
+            raise ValueError("Projectnaam mag niet leeg zijn.")
+        self.name = new_name.strip()
+
+    def set_description(self, description: str) -> None:
+        """Wijzigt de beschrijving (leeg = geen beschrijving)."""
+        self.description = description.strip() if description else ""
+
+    def archive(self) -> None:
+        """Markeert het project als gearchiveerd."""
         self.archived = True
 
-    def set_description(self, description:str):
-        self.description = description
+    def unarchive(self) -> None:
+        """Haalt het project uit het archief (indien nodig)."""
+        self.archived = False
 
-    def start_work_session(self, description:str="", start_time:datetime=datetime.now()):
-        ws = WorkSession(start_time=start_time, project_id=self.proj_id, description=description)
-        self.work_sessions.append(ws)
-        return ws
+    def add_work_session(self, session: WorkSession) -> None:
+        """Voegt een werksessie toe aan het project (gebruik in DB-context)."""
+        if session.project_id != self.proj_id:
+            session.project_id = self.proj_id
+        self.work_sessions.append(session)
 
-    def __str__(self):
-        return f"(ID: {self.proj_id}) {self.name}: {self.description}"
+    def __str__(self) -> str:
+        """Mooie weergave voor in menu's."""
+        archived_mark = " [GEARCHIVEERD]" if self.archived else ""
+        sessie_count = len(self.work_sessions)
+        active = " (1 actief)" if self.active_session else ""
+        return f"[{self.proj_id or '?'}] {self.name}{archived_mark} – {sessie_count} sessie(s){active}"
+
+    def __repr__(self) -> str:
+        return (f"Project(id={self.proj_id}, name='{self.name}', "
+                f"archived={self.archived}, sessions={len(self.work_sessions)})")
