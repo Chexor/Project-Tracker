@@ -1,7 +1,6 @@
 # ui/user_interface.py
 
-import sys
-
+from datetime import datetime
 from models.project import Project
 from models.work_session import WorkSession
 from data.database import Database
@@ -17,12 +16,12 @@ class UserInterface:
         self.db = db
         self.menu = MainMenu(db)
         self.active_projects = []
-        self.active_session: WorkSession | None
+        self.active_session: WorkSession | None = None
 
     def run(self):
         while True:
-            self.active_session = self.db.get_active_work_session_from_db()
-            self.menu.run(active_session=self.active_session)
+            self.active_session = self.db.get_active_work_session()
+            self.menu.run()
 
 
 # ------------
@@ -36,7 +35,7 @@ class UserInterface:
         self.active_projects.append(new_project)
 
     def _show_active_projects(self):
-        self.active_projects = self.db.get_projects_from_db()
+        self.active_projects = self.db.get_active_projects()
         print()
         if not self.active_projects:
             print("Geen actieve projecten gevonden.\n")
@@ -59,7 +58,7 @@ class UserInterface:
             return
 
         description = input("Voer een beschrijving in voor de werksessie (optioneel): ").strip() or None
-        session = WorkSession(project_id=proj_id, description=description)
+        session = WorkSession(project_id=proj_id, start_time=datetime.now(), description=description)
         self.db.add_work_session_to_db(session)
         self.active_session = session
         print(f"Werk sessie gestart voor project ID {proj_id}.")
@@ -70,8 +69,8 @@ class UserInterface:
             return
         self.active_session.end()
         self.db.update_work_session_in_db(self.active_session)
-        self.active_session = None
         print(f"Werk sessie beëindigd: {self.active_session}")
+        self.active_session = None
 
     def _archive_project(self):
         self._show_active_projects()
