@@ -2,34 +2,65 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
+
 
 @dataclass
 class WorkSession:
     project_id: int
+    start_time: datetime
     description: str = ""
-    start_time: datetime = datetime.now()
-    end_time: datetime = None
-    id: int = None
-    is_active: bool = True
+    end_time: Optional[datetime] = None
+    id: Optional[int] = None
+
+    @property
+    def is_active(self) -> bool:
+        """
+        Een sessie is actief zolang end_time None is.
+        Dit is veiliger en consistenter dan een apart veld.
+        """
+        return self.end_time is None
+
+    @property
+    def duration(self) -> datetime:
+        """
+        Retourneert een timedelta met de duur van de sessie.
+        Bij actieve sessie: verschil met huidige tijd.
+        """
+        end = self.end_time or datetime.now()
+        return end - self.start_time
+
+    def duration_str(self) -> str:
+        """
+        Geeft een mooi leesbare string terug van de duur.
+        Bijv: "2u 34m 12s" of "45m 8s" of "1u 5m"
+        """
+        total_seconds = int(self.duration.total_seconds())
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        parts = []
+        if hours:
+            parts.append(f"{hours}u")
+        if minutes:
+            parts.append(f"{minutes}m")
+        if seconds or not parts:  # toon seconden als enige of als 0
+            parts.append(f"{seconds}s")
+
+        return " ".join(parts)
+
+    def end(self) -> None:
+        """Stop de sessie door end_time in te stellen."""
+        if self.is_active:
+            self.end_time = datetime.now()
 
     def __str__(self) -> str:
-        return f"(Project:{self.project_id}, Description: {self.description}, Started: {self.start_time})"
+        """Mooie weergave voor in menu's en logs"""
+        status = "LOPEND" if self.is_active else "AFGESLOTEN"
+        duur = self.duration_str() if not self.is_active else f"{self.duration_str()} (lopend)"
+        desc = f" – {self.description}" if self.description else ""
+        return f"[{status}] {self.start_time.strftime('%d/%m %H:%M')} → {duur}{desc}"
 
-    def end(self):
-        self.is_active = False
-        self.end_time = datetime.now()
-
-    def change_description(self, new_description: str):
-        self.description = new_description
-
-    def change_project_id(self, new_project_id: int):
-        self.project_id = new_project_id
-
-    def change_start_time(self, new_start_time: datetime):
-        self.start_time = new_start_time
-
-    def change_end_time(self, new_end_time: datetime):
-        self.end_time = new_end_time
-
-
-
+    def __repr__(self) -> str:
+        return (f"WorkSession(id={self.id}, project_id={self.project_id}, "
+                f"start={self.start_time.isoformat()}, active={self.is_active})")

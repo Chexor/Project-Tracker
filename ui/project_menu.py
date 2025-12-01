@@ -1,39 +1,39 @@
 # ui/project_menu.py
 
-import sys
+import csv
 from datetime import datetime
 from models.project import Project
 from models.work_session import WorkSession
-from data.database import Database  # Nodig om project te updaten/verwijderen
+from data.database import Database
 
 
 class ProjectMenu:
     """
-    Projectmenu voor een specifiek project.
-    Beheert werksessies, bewerken, afsluiten en rapporten.
+    Projectmenu voor één specifiek project.
+    Beheert werksessies, bewerken, archiveren en exporteren.
     """
 
     def __init__(self, project: Project, db: Database):
         self.project = project
-        self.db = db  # Nodig voor opslaan/wissen
-        self.sessions = project.work_sessions
+        self.db = db
+        # Zorg dat de sessies altijd up-to-date zijn
+        self.project.work_sessions = self.db.get_work_sessions_for_project(project.proj_id)
 
         self.options = [
             "1. Start nieuwe werksessie",
             "2. Stop actieve werksessie",
             "3. Toon alle werksessies",
             "4. Bewerk project",
-            "5. Project afsluiten (verwijderen)",
+            "5. Project archiveren",
             "6. Rapport exporteren (CSV)",
             "7. Terug naar hoofdmenu",
         ]
 
     def run(self):
         while True:
-            print("")
             self._print_header()
             self._print_active_session_status()
-            self._print_options()
+            self._print_menu()
 
             choice = input("Kies een optie (1-7): ").strip()
 
@@ -46,82 +46,86 @@ class ProjectMenu:
             elif choice == "4":
                 self._edit_project()
             elif choice == "5":
-                if self._confirm("Weet je zeker dat je dit project wil verwijderen? (j/N): "):
-                    self.db.delete_project(self.project.proj_id)
-                    print(f"Project '{self.project.name}' verwijderd.")
-                    return  # Terug naar hoofdmenu
+                self._archive_project()
             elif choice == "6":
                 self._export_report()
             elif choice == "7":
-                print("Terug naar hoofdmenu...")
-                return  # Belangrijk: stopt ProjectMenu en keert terug naar MainMenu
+                print("Terug naar hoofdmenu...\n")
+                return  # ← Belangrijk: stopt dit menu en keert terug naar MainMenu
             else:
-                print("Ongeldige keuze. Probeer opnieuw.")
+                print("Ongeldige keuze. Probeer opnieuw.\n")
+
+            input("Druk op Enter om door te gaan...")  # Gebruiksvriendelijke pauze
 
     def _print_header(self):
-        header = f"""
-\n=== Project: {self.project.name} (ID: {self.project.proj_id}) ===
-Omschrijving: {self.project.description or 'Geen omschrijving'}
-Aantal sessies: {len(self.sessions)}
-        """
-        print(header.strip())
-        print("-" * 60)
+        archived_status = " [GEARCHIVEERD]" if self.project.archived else ""
+        print(f"\n{'='*60}")
+        print(f" PROJECT: {self.project.name}{archived_status}")
+        print(f" ID: {self.project.proj_id}")
+        if self.project.description:
+            print(f" Omschrijving: {self.project.description}")
+        print(f" Aantal sessies: {len(self.project.work_sessions)}")
+        print(f"{'='*60}")
 
     def _print_active_session_status(self):
-        active = self._get_active_session()
+        active = next((s for s in self.project.work_sessions if s.is_active), None)
         if active:
-            duur = " (lopend)" if active.end_time is None else f" ({active.duration_str()})"
-            print(f"*** Actieve sessie: {active.start_time.strftime('%H:%M')} - {active.description or 'Geen beschrijving'}{duur} ***")
+            duur = datetime.now() - active.start_time
+            uren, rest = divmod(duur.seconds, 3600)
+            minuten, seconden = divmod(rest, 60)
+            print(f" ACTIEVE SESSIE: Gestart om {active.start_time.strftime('%H:%M:%S')}")
+            print(f"                 Huidige duur: {uren}u {minuten}m {seconden}s")
+            if active.description:
+                print(f"                 → {active.description}")
         else:
-            print("*** Geen actieve werksessie ***")
+            print(" Geen actieve werksessie")
         print("-" * 60)
 
-    def _print_options(self):
+    def _print_menu(self):
         for opt in self.options:
             print(opt)
         print()
 
-    def _get_active_session(self) -> WorkSession | None:
-        for session in self.sessions:
-            if session.is_active:
-                return session
-        return None
-
     def _start_session(self):
-        if self._get_active_session():
-            print("Er loopt al een sessie! Stop die eerst.")
+        if any(s.is_active for s in self.project.work_sessions):
+            print("Er loopt al een sessie voor dit project!")
             return
 
-        description = input("Beschrijving van de sessie (optioneel): ").strip()
+        desc = input("Beschrijving sessie (optioneel): ").strip()
         session = WorkSession(
             project_id=self.project.proj_id,
             start_time=datetime.now(),
-            description=description
+            description=desc or None
         )
-        self.db.add_work_session_to_db(session)          # Opslaan in DB
-        self.project.work_sessions.append(session)  # Ook in object houden
+        self.db.add_work_session_to_db(session)
+        self.project.work_sessions.append(session)
         print(f"Nieuwe sessie gestart om {session.start_time.strftime('%H:%M:%S')}")
 
     def _stop_session(self):
-        active = self._get_active_session()
+        active = next((s for s in self.project.work_sessions if s.is_active), None)
         if not active:
             print("Geen actieve sessie om te stoppen.")
             return
 
         active.end_time = datetime.now()
-        self.db.update_work_session(active)  # Update in DB
-        print(f"Sessie gestopt. Totale duur: {active.duration_str()}")
+        self.db.update_work_session_in_db(active)
+        print(f"Sessie gestopt → Totale duur: {active.duration_str()}")
 
     def _show_sessions(self):
-        if not self.sessions:
-            print("Nog geen werksessies voor dit project.")
+        if not self.project.work_sessions:
+            print("Nog geen werksessies geregistreerd.")
             return
 
-        print("\nGeregistreerde werksessies:")
-        print("-" * 60)
-        for s in sorted(self.sessions, key=lambda x: x.start_time, reverse=True):
-            status = "LOPEND" if s.is_active else s.duration_str()
-            print(f"{s.start_time.strftime('%d/%m/%Y %H:%M')} → {status.ljust(12)} | {s.description or '-'}")
+        print(f"\nWerksessies voor '{self.project.name}':")
+        print("-" * 80)
+        print(f"{'Start':<19} {'Einde':<19} {'Duur':<12} Beschrijving")
+        print("-" * 80)
+        for s in sorted(self.project.work_sessions, key=lambda x: x.start_time, reverse=True):
+            start = s.start_time.strftime("%d/%m/%Y %H:%M")
+            end = s.end_time.strftime("%H:%M") if s.end_time else "Lopend"
+            duur = s.duration_str() if s.end_time else "← lopend"
+            desc = s.description or "-"
+            print(f"{start}  {end:<19} {duur:<12} {desc}")
         print()
 
     def _edit_project(self):
@@ -135,14 +139,40 @@ Aantal sessies: {len(self.sessions)}
         if new_desc:
             self.project.description = new_desc
 
-        self.db.update_project(self.project)
-        print("Project bijgewerkt.")
+        self.db.update_project_in_db(self.project)
+        print("Project bijgewerkt!")
+
+    def _archive_project(self):
+        if self.project.archived:
+            print("Dit project is al gearchiveerd.")
+            return
+
+        confirm = input(f"Weet je zeker dat je '{self.project.name}' wil archiveren? (j/N): ").strip().lower()
+        if confirm in ("j", "ja", "y", "yes"):
+            self.db.archive_project(self.project.proj_id)
+            self.project.archived = True
+            print(f"Project '{self.project.name}' is gearchiveerd.")
+            return  # Direct terug naar hoofdmenu
+        else:
+            print("Archivering geannuleerd.")
 
     def _export_report(self):
-        # Optioneel: later implementeren met pandas of csv module
-        print("Rapport exporteren (CSV) → nog niet geïmplementeerd.")
-        print("Tip: Gebruik pandas.DataFrame(self.project.work_sessions).to_csv(...)")
+        if not self.project.work_sessions:
+            print("Geen sessies om te exporteren.")
+            return
 
-    def _confirm(self, vraag: str) -> bool:
-        antwoord = input(vraag).strip().lower()
-        return antwoord in ("j", "ja", "y", "yes")
+        filename = f"rapport_{self.project.name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.csv"
+        try:
+            with open(filename, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Starttijd", "Eindtijd", "Duur", "Beschrijving"])
+                for s in sorted(self.project.work_sessions, key=lambda x: x.start_time):
+                    writer.writerow([
+                        s.start_time.strftime("%d/%m/%Y %H:%M:%S"),
+                        s.end_time.strftime("%d/%m/%Y %H:%M:%S") if s.end_time else "",
+                        s.duration_str() if s.end_time else "Lopend",
+                        s.description or ""
+                    ])
+            print(f"Rapport succesvol geëxporteerd naar: {filename}")
+        except Exception as e:
+            print(f"Fout bij exporteren: {e}")
