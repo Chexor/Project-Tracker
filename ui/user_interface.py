@@ -69,7 +69,8 @@ class UserInterface:
             return
         self.active_session.end()
         self.db.update_work_session_in_db(self.active_session)
-        print(f"Werk sessie beëindigd: {self.active_session}")
+        duur = self.active_session.duration_str()
+        print(f"Werk sessie beëindigd. Totale duur: {duur}")
         self.active_session = None
 
     def _archive_project(self):
