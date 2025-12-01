@@ -318,11 +318,314 @@ CREATE TABLE work_sessions (
 
 ---
 
+## Suggesties voor Error Handling
+
+### 1. Database Initialisatie (`main.py`)
+
+**Huidige situatie**: Geen error handling bij database initialisatie.
+
+```python
+# VOOR (huidige code)
+if __name__ == "__main__":
+    db = Database()
+    menu = MainMenu(db)
+    menu.run()
+
+# NA (met error handling)
+import sys
+import os
+
+if __name__ == "__main__":
+    try:
+        # Zorg dat db directory bestaat
+        os.makedirs(os.path.dirname(DB_PATH) or ".", exist_ok=True)
+        db = Database()
+    except sqlite3.Error as e:
+        print(f"❌ Database fout: Kan database niet openen of aanmaken.")
+        print(f"   Details: {e}")
+        sys.exit(1)
+    except PermissionError:
+        print(f"❌ Geen schrijfrechten voor database pad: {DB_PATH}")
+        sys.exit(1)
+    
+    try:
+        menu = MainMenu(db)
+        menu.run()
+    except KeyboardInterrupt:
+        print("\n\n👋 Applicatie onderbroken. Tot ziens!")
+        sys.exit(0)
+    finally:
+        db.close()
+```
+
+### 2. Database Operaties (`data/database.py`)
+
+**Suggestie**: Voeg try-except blocks toe aan alle database methoden.
+
+```python
+# Voorbeeld voor add_project_to_db
+def add_project_to_db(self, project: Project) -> bool:
+    """Voegt een nieuw project toe aan de database."""
+    try:
+        cursor = self.connection.cursor()
+        cursor.execute(
+            "INSERT INTO projects (name, description, archived) VALUES (?, ?, ?)",
+            (project.name, project.description or "", 0)
+        )
+        project.proj_id = cursor.lastrowid
+        self.connection.commit()
+        return True
+    except sqlite3.IntegrityError as e:
+        print(f"⚠️ Database integriteisfout: {e}")
+        self.connection.rollback()
+        return False
+    except sqlite3.Error as e:
+        print(f"❌ Database fout bij toevoegen project: {e}")
+        self.connection.rollback()
+        raise DatabaseError(f"Kon project niet toevoegen: {e}")
+```
+
+**Suggestie**: Maak een custom exception class.
+
+```python
+# Voeg toe aan data/database.py of maak data/exceptions.py
+class DatabaseError(Exception):
+    """Aangepaste exception voor database fouten."""
+    pass
+```
+
+### 3. CSV Export (`services/csv_export.py`)
+
+**Huidige situatie**: Basis error handling aanwezig, maar kan verbeterd worden.
+
+```python
+def export_project_to_csv(project: Project) -> str | None:
+    """Exporteert werksessies naar CSV met verbeterde error handling."""
+    try:
+        os.makedirs(EXPORT_PATH, exist_ok=True)
+    except PermissionError:
+        print(f"❌ Geen schrijfrechten voor export directory: {EXPORT_PATH}")
+        return None
+    except OSError as e:
+        print(f"❌ Kan export directory niet aanmaken: {e}")
+        return None
+
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    file_name = f"project_{project.proj_id}_export_{timestamp}.csv"
+    file_path = os.path.join(EXPORT_PATH, file_name)
+
+    try:
+        with open(file_path, "w", newline="", encoding="utf-8") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for session in project.work_sessions:
+                writer.writerow({...})
+        print(f"✅ Geëxporteerd naar: {file_path}")
+        return file_path
+    except PermissionError:
+        print(f"❌ Geen schrijfrechten voor bestand: {file_path}")
+        return None
+    except IOError as e:
+        print(f"❌ I/O fout bij schrijven: {e}")
+        return None
+```
+
+### 4. Graceful Shutdown
+
+**Suggestie**: Voeg signal handling toe voor clean shutdown.
+
+```python
+# In main.py
+import signal
+
+def signal_handler(sig, frame):
+    print("\n\n👋 Applicatie wordt afgesloten...")
+    db.close()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+```
+
+---
+
+## Suggesties voor Input Validatie
+
+### 1. Projectnaam Validatie (`ui/main_menu.py`)
+
+**Huidige situatie**: Alleen check op lege naam.
+
+```python
+# VOOR
+name = input("Naam van het project: ").strip()
+if not name:
+    print("Naam is verplicht!")
+    return None
+
+# NA (met uitgebreide validatie)
+MAX_PROJECT_NAME_LENGTH = 100
+MIN_PROJECT_NAME_LENGTH = 2
+FORBIDDEN_CHARS = ['/', '\\', ':', '*', '?', '"', '<', '>', '|']
+
+def _validate_project_name(self, name: str) -> tuple[bool, str]:
+    """Valideert projectnaam en retourneert (is_valid, error_message)."""
+    if not name:
+        return False, "Naam is verplicht!"
+    if len(name) < MIN_PROJECT_NAME_LENGTH:
+        return False, f"Naam moet minimaal {MIN_PROJECT_NAME_LENGTH} tekens bevatten."
+    if len(name) > MAX_PROJECT_NAME_LENGTH:
+        return False, f"Naam mag maximaal {MAX_PROJECT_NAME_LENGTH} tekens bevatten."
+    for char in FORBIDDEN_CHARS:
+        if char in name:
+            return False, f"Naam mag geen '{char}' bevatten."
+    return True, ""
+
+def _create_new_project(self):
+    print("\nNieuw project aanmaken")
+    print("-" * 30)
+    name = input("Naam van het project: ").strip()
+    
+    is_valid, error_msg = self._validate_project_name(name)
+    if not is_valid:
+        print(f"⚠️ {error_msg}")
+        return None
+    # ... rest van de methode
+```
+
+### 2. Project-ID Validatie (`ui/main_menu.py`)
+
+**Huidige situatie**: Vangt alleen ValueError op.
+
+```python
+# VOOR
+try:
+    proj_id = int(input("Voer project-ID in: ").strip())
+
+# NA (met betere feedback)
+def _get_valid_project_id(self, prompt: str = "Voer project-ID in: ") -> int | None:
+    """Vraagt om project-ID met validatie. Retourneert None bij ongeldige invoer."""
+    user_input = input(prompt).strip()
+    
+    if not user_input:
+        print("⚠️ Geen ID ingevoerd.")
+        return None
+    
+    try:
+        proj_id = int(user_input)
+        if proj_id <= 0:
+            print("⚠️ ID moet een positief getal zijn.")
+            return None
+        return proj_id
+    except ValueError:
+        print(f"⚠️ '{user_input}' is geen geldig nummer.")
+        return None
+```
+
+### 3. Menu Keuze Validatie (herbruikbaar)
+
+**Suggestie**: Maak een generieke validator voor menu keuzes.
+
+```python
+# Voeg toe aan ui/validators.py (nieuw bestand)
+def get_menu_choice(prompt: str, valid_options: list[str], max_attempts: int = 3) -> str | None:
+    """
+    Vraagt om menu keuze met validatie en retry logica.
+    
+    Args:
+        prompt: De prompt tekst
+        valid_options: Lijst van geldige opties (bv. ["1", "2", "3"])
+        max_attempts: Maximum aantal pogingen
+    
+    Returns:
+        De gekozen optie of None na max_attempts
+    """
+    for attempt in range(max_attempts):
+        choice = input(prompt).strip()
+        if choice in valid_options:
+            return choice
+        remaining = max_attempts - attempt - 1
+        if remaining > 0:
+            print(f"⚠️ Ongeldige keuze. Nog {remaining} poging(en).")
+    print("❌ Te veel ongeldige pogingen.")
+    return None
+```
+
+### 4. Beschrijving Validatie
+
+**Suggestie**: Valideer beschrijvingen op lengte en content.
+
+```python
+MAX_DESCRIPTION_LENGTH = 500
+
+def _validate_description(description: str) -> tuple[bool, str]:
+    """Valideert beschrijving."""
+    if len(description) > MAX_DESCRIPTION_LENGTH:
+        return False, f"Beschrijving mag maximaal {MAX_DESCRIPTION_LENGTH} tekens bevatten."
+    return True, ""
+```
+
+### 5. Bevestiging Helper
+
+**Suggestie**: Maak een herbruikbare bevestigingsfunctie.
+
+```python
+def confirm_action(prompt: str, default: bool = False) -> bool:
+    """
+    Vraagt om bevestiging met duidelijke opties.
+    
+    Args:
+        prompt: De vraag tekst
+        default: Standaard antwoord bij lege input
+    
+    Returns:
+        True voor ja, False voor nee
+    """
+    default_hint = "(J/n)" if default else "(j/N)"
+    response = input(f"{prompt} {default_hint}: ").strip().lower()
+    
+    if not response:
+        return default
+    
+    return response in ("j", "ja", "y", "yes")
+```
+
+### 6. Datum/Tijd Validatie (voor toekomstige features)
+
+```python
+from datetime import datetime
+
+def parse_datetime(input_str: str, format: str = "%d/%m/%Y %H:%M") -> datetime | None:
+    """Parseert datum/tijd string met validatie."""
+    try:
+        return datetime.strptime(input_str.strip(), format)
+    except ValueError:
+        print(f"⚠️ Ongeldige datum/tijd. Gebruik formaat: {format}")
+        return None
+```
+
+---
+
+## Validatie Constanten
+
+**Suggestie**: Centraliseer alle validatie constanten in `config.py`.
+
+```python
+# Voeg toe aan config.py
+# === Validatie Constanten ===
+MAX_PROJECT_NAME_LENGTH = 100
+MIN_PROJECT_NAME_LENGTH = 2
+MAX_DESCRIPTION_LENGTH = 500
+MAX_MENU_ATTEMPTS = 3
+FORBIDDEN_FILENAME_CHARS = ['/', '\\', ':', '*', '?', '"', '<', '>', '|']
+```
+
+---
+
 ## Aanbevelingen
 
 ### Korte Termijn
-1. **Voeg requirements.txt toe** met `environs` dependency
-2. **Fix type hint** in `WorkSession.duration` naar `timedelta`
+1. ~~**Voeg requirements.txt toe** met `environs` dependency~~ ✅ Gedaan
+2. ~~**Fix type hint** in `WorkSession.duration` naar `timedelta`~~ ✅ Gedaan
 3. **Voeg basis error handling toe** bij database en file operaties
 
 ### Middellange Termijn
