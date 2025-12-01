@@ -1,7 +1,7 @@
 # models/work_session.py
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 
@@ -23,7 +23,7 @@ class WorkSession:
         return self.end_time is None
 
     @property
-    def duration(self) -> datetime:
+    def duration(self) -> timedelta:
         """Retourneert de duur van de sessie als timedelta."""
         end = self.end_time or datetime.now()
         return end - self.start_time
