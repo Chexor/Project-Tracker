@@ -15,40 +15,15 @@ class UserInterface:
 
     def __init__(self, db: Database):
         self.db = db
-        self.menu = MainMenu()
+        self.menu = MainMenu(db)
         self.active_projects = []
-        self.active_session: WorkSession | None = self.db.get_active_work_session_from_db()
+        self.active_session: WorkSession | None
 
     def run(self):
         while True:
-            self.menu.show(active_session=self.active_session)
+            self.active_session = self.db.get_active_work_session_from_db()
+            self.menu.run(active_session=self.active_session)
 
-            selection = input(f"Selecteer een optie (1-{len(self.menu.options)}): ").strip()
-
-            if selection == '1':
-                # Toon actieve projecten
-                self._show_active_projects()
-            elif selection == '2':
-                # Maak nieuw project
-                self._new_project()
-            elif selection == '3':
-                # Start nieuwe werksessie
-                self._start_new_session()
-            elif selection == '4':
-                # Beëindig actieve werksessie
-                self._stop_active_session()
-            elif selection == '5':
-                # Exporteer CSV
-                print("CSV exporteren... (nog te implementeren)")
-            elif selection == '6':
-                # Sluit project af
-                print("Project afsluiten... (nog te implementeren)")
-            elif selection == '7':
-                # Afsluiten
-                print("Afsluiten...")
-                sys.exit(0)
-            else:
-                print("Ongeldige selectie. Probeer het opnieuw.")
 
 # ------------
 #  Functions

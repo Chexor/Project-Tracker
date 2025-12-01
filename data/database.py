@@ -64,6 +64,7 @@ class Database:
                 work_session.description
             )
         )
+        self.connection.commit()
 
     def update_project_in_db(self, project: Project):
         cursor = self.connection.cursor()
