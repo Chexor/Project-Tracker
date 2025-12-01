@@ -24,7 +24,7 @@ class Project:
 
     @property
     def is_archived(self) -> bool:
-        """Maakt het lezen van archived consistenter (optioneel, maar netjes)."""
+        """Maakt het lezen van archived consistenter."""
         return self.archived
 
     @property
@@ -69,18 +69,19 @@ class Project:
         self.archived = False
 
     def add_work_session(self, session: WorkSession) -> None:
-        """Voegt een werksessie toe aan het project (gebruik in DB-context)."""
+        """Voegt een werksessie toe aan het project."""
         if session.project_id != self.proj_id:
             session.project_id = self.proj_id
         self.work_sessions.append(session)
 
     def __str__(self) -> str:
-        """Mooie weergave voor in menu's."""
+        """Aangepaste weergave voor lijsten en logs."""
         archived_mark = " [GEARCHIVEERD]" if self.archived else ""
         sessie_count = len(self.work_sessions)
         active = " (1 actief)" if self.active_session else ""
         return f"[{self.proj_id or '?'}] {self.name}{archived_mark} – {sessie_count} sessie(s){active}"
 
     def __repr__(self) -> str:
+        """Technische representatie voor debugging."""
         return (f"Project(id={self.proj_id}, name='{self.name}', "
                 f"archived={self.archived}, sessions={len(self.work_sessions)})")

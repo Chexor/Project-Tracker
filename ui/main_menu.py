@@ -10,7 +10,7 @@ from models.project import Project
 class MainMenu:
     """
     Hoofdmenu van de Project Time Tracker applicatie.
-    Toont alleen actieve (niet-gearchiveerde) projecten.
+    Toont alleen actieve (niet-gearchiveerde) projecten en huidige actieve werksessie.
     """
 
     def __init__(self, db: Database):
@@ -56,6 +56,7 @@ class MainMenu:
             input("Druk op Enter om door te gaan...")  # Kleine pauze voor leesbaarheid
 
     def _print_header_and_status(self, active_session: WorkSession | None):
+        """Print het hoofdmenu header en de status van de actieve werksessie."""
         print(self.header)
         print("-" * 50)
 
@@ -73,6 +74,7 @@ class MainMenu:
         print("-" * 50)
 
     def _print_options(self):
+        """Print de beschikbare opties in het hoofdmenu."""
         for option in self.options:
             print(option)
         print()
@@ -91,6 +93,7 @@ class MainMenu:
         print()
 
     def _open_existing_project(self):
+        """Opent een bestaand project."""
         projects = self.db.get_active_projects()
         if not projects:
             print("Geen actieve projecten om te openen.")
@@ -109,6 +112,7 @@ class MainMenu:
             print("Ongeldige invoer. Voer een nummer in.")
 
     def _create_new_project(self):
+        """Maakt een nieuw project aan."""
         print("\nNieuw project aanmaken")
         print("-" * 30)
         name = input("Naam van het project: ").strip()
@@ -130,6 +134,7 @@ class MainMenu:
         project_menu.run()
 
     def _stop_active_session(self):
+        """Stopt de huidige actieve werksessie, indien aanwezig."""
         active = self.db.get_active_work_session()
         if not active:
             print("Er loopt geen actieve sessie.")

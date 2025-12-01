@@ -1,10 +1,10 @@
 # ui/project_menu.py
 
-import csv
 from datetime import datetime
 from models.project import Project
 from models.work_session import WorkSession
 from data.database import Database
+import services.csv_export
 
 
 class ProjectMenu:
@@ -24,12 +24,13 @@ class ProjectMenu:
             "2. Stop actieve werksessie",
             "3. Toon alle werksessies",
             "4. Bewerk project",
-            "5. Project archiveren",
-            "6. Rapport exporteren (CSV)",
+            "5. Rapport exporteren (CSV)",
+            "6. Project archiveren",
             "7. Terug naar hoofdmenu",
         ]
 
     def run(self):
+        """Hoofdloop van het projectmenu. Blijft draaien tot het menu wordt verlaten."""
         while True:
             self._print_header()
             self._print_active_session_status()
@@ -46,9 +47,9 @@ class ProjectMenu:
             elif choice == "4":
                 self._edit_project()
             elif choice == "5":
-                self._archive_project()
+                services.csv_export.export_project_to_csv(self.project)
             elif choice == "6":
-                self._export_report()
+                self._archive_project()
             elif choice == "7":
                 print("Terug naar hoofdmenu...\n")
                 return  # ← Belangrijk: stopt dit menu en keert terug naar MainMenu
@@ -58,6 +59,7 @@ class ProjectMenu:
             input("Druk op Enter om door te gaan...")  # Gebruiksvriendelijke pauze
 
     def _print_header(self):
+        """Print het header van het projectmenu met projectdetails."""
         archived_status = " [GEARCHIVEERD]" if self.project.archived else ""
         print(f"\n{'='*60}")
         print(f" PROJECT: {self.project.name}{archived_status}")
@@ -68,6 +70,7 @@ class ProjectMenu:
         print(f"{'='*60}")
 
     def _print_active_session_status(self):
+        """Print de status van de actieve werksessie, indien aanwezig."""
         active = next((s for s in self.project.work_sessions if s.is_active), None)
         if active:
             duur = datetime.now() - active.start_time
@@ -82,11 +85,13 @@ class ProjectMenu:
         print("-" * 60)
 
     def _print_menu(self):
+        """Print de beschikbare opties in het projectmenu."""
         for opt in self.options:
             print(opt)
         print()
 
     def _start_session(self):
+        """Start een nieuwe werksessie voor het project."""
         if any(s.is_active for s in self.project.work_sessions):
             print("Er loopt al een sessie voor dit project!")
             return
@@ -102,6 +107,7 @@ class ProjectMenu:
         print(f"Nieuwe sessie gestart om {session.start_time.strftime('%H:%M:%S')}")
 
     def _stop_session(self):
+        """Stopt de actieve werksessie voor het project."""
         active = next((s for s in self.project.work_sessions if s.is_active), None)
         if not active:
             print("Geen actieve sessie om te stoppen.")
@@ -112,6 +118,7 @@ class ProjectMenu:
         print(f"Sessie gestopt → Totale duur: {active.duration_str()}")
 
     def _show_sessions(self):
+        """Toont alle werksessies voor het project in een lijst."""
         if not self.project.work_sessions:
             print("Nog geen werksessies geregistreerd.")
             return
@@ -129,6 +136,7 @@ class ProjectMenu:
         print()
 
     def _edit_project(self):
+        """Bewerkt de naam en omschrijving van het project."""
         print(f"Huidige naam: {self.project.name}")
         new_name = input("Nieuwe naam (leeg = behouden): ").strip()
         if new_name:
@@ -143,6 +151,7 @@ class ProjectMenu:
         print("Project bijgewerkt!")
 
     def _archive_project(self):
+        """Archiveert het project na bevestiging."""
         if self.project.archived:
             print("Dit project is al gearchiveerd.")
             return
@@ -155,24 +164,3 @@ class ProjectMenu:
             return  # Direct terug naar hoofdmenu
         else:
             print("Archivering geannuleerd.")
-
-    def _export_report(self):
-        if not self.project.work_sessions:
-            print("Geen sessies om te exporteren.")
-            return
-
-        filename = f"rapport_{self.project.name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.csv"
-        try:
-            with open(filename, "w", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
-                writer.writerow(["Starttijd", "Eindtijd", "Duur", "Beschrijving"])
-                for s in sorted(self.project.work_sessions, key=lambda x: x.start_time):
-                    writer.writerow([
-                        s.start_time.strftime("%d/%m/%Y %H:%M:%S"),
-                        s.end_time.strftime("%d/%m/%Y %H:%M:%S") if s.end_time else "",
-                        s.duration_str() if s.end_time else "Lopend",
-                        s.description or ""
-                    ])
-            print(f"Rapport succesvol geëxporteerd naar: {filename}")
-        except Exception as e:
-            print(f"Fout bij exporteren: {e}")

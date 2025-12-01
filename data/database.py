@@ -10,12 +10,14 @@ from models.work_session import WorkSession
 
 
 class Database:
+    """Creëert en beheert de SQLite database voor projecten en werksessies."""
     def __init__(self):
         self.connection = sqlite3.connect(DB_PATH)
         self.connection.row_factory = sqlite3.Row  # ← Superhandig: geeft dict-achtige rows
         self.create_tables()
 
     def create_tables(self):
+        """Maakt de benodigde tabellen aan als ze nog niet bestaan."""
         cursor = self.connection.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS projects (
@@ -39,6 +41,7 @@ class Database:
 
     # === PROJECTS ===
     def add_project_to_db(self, project: Project):
+        """Voegt een nieuw project toe aan de database."""
         cursor = self.connection.cursor()
         cursor.execute(
             "INSERT INTO projects (name, description, archived) VALUES (?, ?, ?)",
@@ -48,6 +51,7 @@ class Database:
         self.connection.commit()
 
     def update_project_in_db(self, project: Project):
+        """Wijzigt een bestaand project in de database."""
         cursor = self.connection.cursor()
         cursor.execute(
             "UPDATE projects SET name = ?, description = ?, archived = ? WHERE id = ?",
@@ -87,6 +91,7 @@ class Database:
 
     # === WORK SESSIONS ===
     def add_work_session_to_db(self, session: WorkSession):
+        """Voegt een nieuwe werksessie toe aan de database."""
         cursor = self.connection.cursor()
         cursor.execute(
             """INSERT INTO work_sessions 
@@ -103,6 +108,7 @@ class Database:
         self.connection.commit()
 
     def update_work_session_in_db(self, session: WorkSession):
+        """Wijzigt een bestaande werksessie in de database."""
         cursor = self.connection.cursor()
         cursor.execute(
             """UPDATE work_sessions 
@@ -117,6 +123,7 @@ class Database:
         self.connection.commit()
 
     def get_work_sessions_for_project(self, project_id: int) -> List[WorkSession]:
+        """Retourneert alle werksessies voor een specifiek project."""
         cursor = self.connection.cursor()
         cursor.execute(
             "SELECT id, project_id, start_time, end_time, description FROM work_sessions WHERE project_id = ?",
