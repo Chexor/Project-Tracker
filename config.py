@@ -6,5 +6,5 @@ try:
 except FileNotFoundError as e:
     print(f"Waarschuwing: .env bestand niet gevonden. (Fallback to default)({e})")
 
-DB_PATH = env.str("DB_PATH", "db/project_tracker.db")
+DB_PATH = env.str("DB_PATH", "database/project_tracker.db")
 EXPORT_PATH = env.str("EXPORT_PATH", "export")
