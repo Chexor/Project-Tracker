@@ -13,7 +13,7 @@ class Database:
     """Creëert en beheert de SQLite database voor projecten en werksessies."""
     def __init__(self):
         self.connection = sqlite3.connect(DB_PATH)
-        self.connection.row_factory = sqlite3.Row  # ← Superhandig: geeft dict-achtige rows
+        self.connection.row_factory = sqlite3.Row  # ← dict-achtige rows
         self.create_tables()
 
     def create_tables(self):
