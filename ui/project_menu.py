@@ -68,10 +68,19 @@ class ProjectMenu:
         :return: True als er een actieve sessie is, anders False."""
         active = self.db.get_active_work_session()
         if active:
-            print(f"Er is al een actieve sessie voor project ID {active.project_id}!")
-            return True
+            check = True
+            if active.project_id == self.project.proj_id:
+                msg = "Er is al een actieve sessie voor dit project!"
+            else:
+                msg = f"Er is al een actieve sessie voor project ID {active.project_id}!"
         else:
-            return False
+            check = False
+
+        if check:
+            print(msg)
+            print("Stop eerst de actieve sessie voordat je een nieuwe start.")
+
+        return check
 
     # ===*** Hulpmethoden voor menu acties ***===
 
@@ -111,19 +120,16 @@ class ProjectMenu:
 
     def _start_session(self):
         """Start een nieuwe werksessie voor het project."""
-        if any(s.is_active for s in self.project.work_sessions):
-            print("Er loopt al een sessie voor dit project!")
-            return
-
-        desc = input("Beschrijving sessie (optioneel): ").strip()
-        session = WorkSession(
-            project_id=self.project.proj_id,
-            start_time=datetime.now(),
-            description=desc or None
-        )
-        self.db.add_work_session_to_db(session)
-        self.project.work_sessions.append(session)
-        print(f"Nieuwe sessie gestart om {session.start_time.strftime('%H:%M:%S')}")
+        if not self.check_for_active_session(): # Controleer op lopende sessie
+            desc = input("Beschrijving sessie (optioneel): ").strip()
+            session = WorkSession(
+                project_id=self.project.proj_id,
+                start_time=datetime.now(),
+                description=desc or None
+            )
+            self.db.add_work_session_to_db(session)
+            self.project.work_sessions.append(session)
+            print(f"Nieuwe sessie gestart om {session.start_time.strftime('%H:%M:%S')}")
 
     def _stop_session(self):
         """Stopt de actieve werksessie voor het project."""
