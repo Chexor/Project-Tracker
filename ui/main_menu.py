@@ -12,9 +12,7 @@ class MainMenu:
     Hoofdmenu van de Project Time Tracker applicatie.
     Toont alleen actieve (niet-gearchiveerde) projecten en huidige actieve werksessie.
     """
-
     def __init__(self, db: Database):
-        self.db = db
         self.header = "\n=== Project Time Tracker ==="
         self.options = [
             "1. Toon actieve projecten",
@@ -23,6 +21,9 @@ class MainMenu:
             "4. Stop actieve werksessie",
             "5. Afsluiten"
         ]
+        self.db = db
+        self.active_session: WorkSession | None = None
+        self.active_projects: list[Project] = []
 
     def run(self):
         """Hoofdloop van de applicatie – blijft draaien tot afsluiten."""
@@ -54,6 +55,8 @@ class MainMenu:
             # Na elke actie: check opnieuw of er een actieve sessie is
             active_session = self.db.get_active_work_session()
             input("Druk op Enter om door te gaan...")  # Kleine pauze voor leesbaarheid
+
+    # ===*** Validatie methoden ***===
 
     def _print_header_and_status(self, active_session: WorkSession | None):
         """Print het hoofdmenu header en de status van de actieve werksessie."""

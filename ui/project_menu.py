@@ -58,6 +58,11 @@ class ProjectMenu:
 
             input("Druk op Enter om door te gaan...")  # Gebruiksvriendelijke pauze
 
+    # ===*** Validatie methoden ***===
+    def check_for_active_session(self) -> bool:
+        """Controleert of er al een actieve sessie lopende is (op alle projecten)."""
+        a
+
     def _print_header(self):
         """Print het header van het projectmenu met projectdetails."""
         archived_status = " [GEARCHIVEERD]" if self.project.archived else ""
