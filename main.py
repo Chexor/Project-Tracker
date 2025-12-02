@@ -8,6 +8,7 @@ from data.database import Database
 from ui.main_menu import MainMenu
 
 if __name__ == "__main__":
+
     try:
         # Controleer of de benodigde mappen bestaan, anders aanmaken
         os.makedirs(os.path.dirname(DB_PATH) or ".", exist_ok=True)
