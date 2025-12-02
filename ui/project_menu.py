@@ -66,21 +66,16 @@ class ProjectMenu:
         Controleert of er al een actieve sessie lopende is (over alle projecten).
         Er kan maar één actieve sessie tegelijk zijn.
         :return: True als er een actieve sessie is, anders False."""
-        active = self.db.get_active_work_session()
-        if active:
-            check = True
-            if active.project_id == self.project.proj_id:
-                msg = "Er is al een actieve sessie voor dit project!"
-            else:
-                msg = f"Er is al een actieve sessie voor project ID {active.project_id}!"
+        active_session = self.db.get_active_work_session()
+        if not active_session:
+            return False
         else:
-            check = False
-
-        if check:
-            print(msg)
-            print("Stop eerst de actieve sessie voordat je een nieuwe start.")
-
-        return check
+            if active_session.project_id == self.project.proj_id:
+                print("Er loopt al een actieve sessie voor dit project.")
+            else:
+                print(f"Er loopt al een actieve sessie voor project met ID {active_session.project_id}.")
+            return True
+        
 
     # ===*** Hulpmethoden voor menu acties ***===
 
