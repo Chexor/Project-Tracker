@@ -59,6 +59,8 @@ Project-Tracker/
 ├── data/
 │   ├── __init__.py
 │   └── database.py      # SQLite database operaties
+├── database/            # Default locatie voor SQLite database
+├── export/              # Default locatie voor geëxporteerde CSV-bestanden
 ├── models/
 │   ├── __init__.py
 │   ├── project.py       # Project dataclass
