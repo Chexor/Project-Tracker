@@ -3,8 +3,10 @@
 CLI-applicatie om gepresteerde werkuren bij te houden voor verschillende projecten.
 
 ## Omschrijving
-**Project Tracker** is een command-line interface (CLI) applicatie geschreven in Python voor het bijhouden van werkuren per project. 
+**Project Tracker** is een command-line interface (CLI) applicatie geschreven in Python voor het bijhouden van werkuren per project.  
 De applicatie maakt gebruik van een SQLite database voor persistente opslag en biedt een intuïtieve menu-gestuurde interface.
+
+
 
 ### Hoofdfunctionaliteiten
 
