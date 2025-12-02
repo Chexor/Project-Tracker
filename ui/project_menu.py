@@ -29,6 +29,8 @@ class ProjectMenu:
             "7. Terug naar hoofdmenu",
         ]
 
+# ===*** Hoofdloop methode ***===
+
     def run(self):
         """Hoofdloop van het projectmenu. Blijft draaien tot het menu wordt verlaten."""
         while True:
@@ -60,8 +62,18 @@ class ProjectMenu:
 
     # ===*** Validatie methoden ***===
     def check_for_active_session(self) -> bool:
-        """Controleert of er al een actieve sessie lopende is (op alle projecten)."""
-        a
+        """
+        Controleert of er al een actieve sessie lopende is (over alle projecten).
+        Er kan maar één actieve sessie tegelijk zijn.
+        :return: True als er een actieve sessie is, anders False."""
+        active = self.db.get_active_work_session()
+        if active:
+            print(f"Er is al een actieve sessie voor project ID {active.project_id}!")
+            return True
+        else:
+            return False
+
+    # ===*** Hulpmethoden voor menu acties ***===
 
     def _print_header(self):
         """Print het header van het projectmenu met projectdetails."""
@@ -94,6 +106,8 @@ class ProjectMenu:
         for opt in self.options:
             print(opt)
         print()
+
+    # ===*** Actie methoden ***===
 
     def _start_session(self):
         """Start een nieuwe werksessie voor het project."""

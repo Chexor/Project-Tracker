@@ -131,7 +131,7 @@ class MainMenu:
         return project
 
     def _open_project(self, project):
-        """Opent het projectmenu voor een specifiek project"""
+        """Opent het projectmenu voor een specifiek project """
         project.work_sessions = self.db.get_work_sessions_for_project(project.proj_id)
         project_menu = ProjectMenu(project, self.db)
         project_menu.run()
