@@ -74,8 +74,9 @@ class ProjectMenu:
                 print("Er loopt al een actieve sessie voor dit project.")
             else:
                 print(f"Er loopt al een actieve sessie voor project met ID {active_session.project_id}.")
+
+            print("Stop eerst de actieve sessie voor een nieuwe kan gestart worden.")
             return True
-        
 
     # ===*** Hulpmethoden voor menu acties ***===
 
