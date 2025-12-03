@@ -25,4 +25,4 @@ export/
 Thumbs.db
 
 # Test files
-tests/*
+testing/test*

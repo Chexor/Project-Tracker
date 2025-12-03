@@ -35,7 +35,7 @@ De database wordt automatisch aangemaakt in de default locatie bij de eerste uit
 De default locatie van de database 'database/project_tracker.db' kan worden aangepast via de `.env` configuratie.
 
 ## CSV Export
-Geregistreerde werksessies kunnen worden geëxporteerd naar CSV-bestanden. 
+Geregistreerde werksessies kunnen per project worden geëxporteerd naar CSV-bestanden. 
 De geëxporteerde bestanden worden standaard opgeslagen in de 'export/' map, welke kan worden aangepast via de `.env` configuratie.
 
 ## Gebruik
