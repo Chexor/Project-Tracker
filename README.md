@@ -29,10 +29,17 @@ De applicatie maakt gebruik van een SQLite database voor persistente opslag en b
    ```
 3. Kopieer `.env.example` naar `.env` en pas de configuratie aan indien nodig.
 
+
 ## Database
 De applicatie gebruikt een SQLite database voor het opslaan van projecten en werksessies.  
 De database wordt automatisch aangemaakt in de default locatie bij de eerste uitvoering van de applicatie.  
 De default locatie van de database 'database/project_tracker.db' kan worden aangepast via de `.env` configuratie.
+
+(optioneel)  
+Nadat de database is aangemaakt kan automatisch een set mock data worden toegevoegd voor testdoeleinden met het commando:  
+```bash
+  python db_seed.py
+```
 
 ## CSV Export
 Geregistreerde werksessies kunnen per project worden geëxporteerd naar CSV-bestanden. 
