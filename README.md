@@ -9,12 +9,12 @@ De applicatie maakt gebruik van een SQLite database voor persistente opslag en b
 
 ### Hoofdfunctionaliteiten
 
-| Functie | Beschrijving |
-|---------|--------------|
-| **Projectbeheer** | Aanmaken, bewerken en archiveren van projecten |
-| **Werksessie Tracking** | Starten en stoppen van werksessies met tijdregistratie |
-| **Rapportage** | Exporteren van werksessies naar CSV-bestanden |
-| **Actieve Sessie Monitoring** | Real-time weergave van lopende werksessies |
+| Functie                       | Beschrijving                                           |
+|-------------------------------|--------------------------------------------------------|
+| **Projectbeheer**             | Aanmaken, bewerken en archiveren van projecten         |
+| **Werksessie Tracking**       | Starten en stoppen van werksessies met tijdregistratie |
+| **Rapportage**                | Exporteren van werksessies naar CSV-bestanden          |
+| **Actieve Sessie Monitoring** | Real-time weergave van lopende werksessies             |
 
 ## Installatie
 1. Maak en activeer een virtuele omgeving:
@@ -34,12 +34,17 @@ De applicatie gebruikt een SQLite database voor het opslaan van projecten en wer
 De database wordt automatisch aangemaakt in de default locatie bij de eerste uitvoering van de applicatie.  
 De default locatie van de database 'database/project_tracker.db' kan worden aangepast via de `.env` configuratie.
 
+## CSV Export
+Geregistreerde werksessies kunnen worden geëxporteerd naar CSV-bestanden. 
+De geëxporteerde bestanden worden standaard opgeslagen in de 'export/' map, welke kan worden aangepast via de `.env` configuratie.
+
 ## Gebruik
 1. Start de applicatie met het volgende commando:
-```bash
-python main.py
-```
+    ```bash
+    python main.py
+    ```
 2. Navigeer door de menu-opties om projecten te beheren en uren te registreren.
+
 
 
 ### Menu Structuur
