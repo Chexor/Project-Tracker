@@ -23,3 +23,6 @@ export/
 # OS-specific
 .DS_Store
 Thumbs.db
+
+# Test files
+tests/*
