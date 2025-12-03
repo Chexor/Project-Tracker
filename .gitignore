@@ -16,7 +16,7 @@ __pycache__/
 .env
 
 # Generated data
-db/
+database/
 export/
 *.csv
 
