@@ -4,8 +4,7 @@ CLI-applicatie om gepresteerde werkuren bij te houden voor verschillende project
 
 ## Omschrijving
 **Project Tracker** is een command-line interface (CLI) applicatie geschreven in Python voor het bijhouden van werkuren per project.  
-De applicatie maakt gebruik van een SQLite database voor persistente opslag en biedt een intuïtieve menu-gestuurde interface.
-
+De applicatie maakt gebruik van een SQLite database voor persistente opslag en biedt een menu-gestuurde interface.
 
 
 ### Hoofdfunctionaliteiten
@@ -29,6 +28,19 @@ De applicatie maakt gebruik van een SQLite database voor persistente opslag en b
    pip install -r requirements.txt
    ```
 3. Kopieer `.env.example` naar `.env` en pas de configuratie aan indien nodig.
+
+## Database
+De applicatie gebruikt een SQLite database voor het opslaan van projecten en werksessies.  
+De database wordt automatisch aangemaakt in de default locatie bij de eerste uitvoering van de applicatie.  
+De default locatie van de database 'database/project_tracker.db' kan worden aangepast via de `.env` configuratie.
+
+## Gebruik
+1. Start de applicatie met het volgende commando:
+```bash
+python main.py
+```
+2. Navigeer door de menu-opties om projecten te beheren en uren te registreren.
+
 
 ### Menu Structuur
 
@@ -100,15 +112,4 @@ De applicatie volgt een gelaagde architectuur:
 └─────────────────────────────────────┘
 ```
 
-## Gebruik
-1. Start de applicatie met het volgende commando:
-```bash
-python main.py
-```
-2. Navigeer door de menu-opties om projecten te beheren en uren te registreren.
-
-## Vereisten
-- Python 3.12 of hoger
-- Pakketten zoals vermeld in `requirements.txt`
-- SQLite database (standaard, kan worden aangepast in `.env`)
 
